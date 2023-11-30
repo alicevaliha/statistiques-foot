@@ -1,5 +1,5 @@
-create database foot_stats;
-use foot_stats;
+-- create database foot_stats;
+-- use foot_stats;
 
 create table equipe(
     id_equipe int auto_increment primary key,
