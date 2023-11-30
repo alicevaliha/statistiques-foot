@@ -85,7 +85,6 @@ create table action(
 
     --buts de Haaland et Arnold --tirs et tirs Ca
     insert into action values (null, 70, 11, 1);
-    
     insert into action values (null, 70, 15, 1);
     insert into action values (null, 0, 11, 1);
     insert into action values (null, 0, 15, 1);
@@ -217,3 +216,207 @@ CREATE TABLE possession (
 
 
 --JE BOSSE LINERAIREMENT A PARTIR D'ICI MAINTENANT COMME CA Y A VOILA QUOI
+
+-- Sarobidy
+-- views
+
+-- GENERAL
+CREATE VIEW v_match_stats AS
+SELECT m.id_matches, m.datematches, e1.nomEquipe AS equipe1, e2.nomEquipe AS equipe2, p1.pourcentage AS possession_equipe1, p2.pourcentage AS possession_equipe2, pa1.reussite AS passes_reussies_equipe1, pa2.reussite AS passes_reussies_equipe2
+FROM matches m
+JOIN equipe e1 ON m.id_equipe1 = e1.id_equipe
+JOIN equipe e2 ON m.id_equipe2 = e2.id_equipe
+LEFT JOIN possession p1 ON m.id_matches = p1.id_matches AND m.id_equipe1 = p1.id_equipe
+LEFT JOIN possession p2 ON m.id_matches = p2.id_matches AND m.id_equipe2 = p2.id_equipe
+LEFT JOIN passes pa1 ON m.id_matches = pa1.id_matches AND m.id_equipe1 = pa1.id_equipe
+LEFT JOIN passes pa2 ON m.id_matches = pa2.id_matches AND m.id_equipe2 = pa2.id_equipe;
+
+-- total but par équipe : mijanona ho requête donc atao fonction
+SELECT e.nomEquipe, COUNT(a.id_action) AS total_buts
+FROM equipe e
+LEFT JOIN joueur j ON e.id_equipe = j.id_equipe
+LEFT JOIN action a ON j.id_joueur = a.id_joueur
+WHERE a.typeaction = 70
+AND e.id_equipe = 1 
+GROUP BY e.nomEquipe;
+
+-- total but par équipe par match
+create or replace view v_btE_pm as
+SELECT m.id_matches,m.datematches,e.nomEquipe AS equipe, COUNT(a.id_action) AS total_buts
+FROM matches m
+JOIN equipe e ON m.id_equipe1 = e.id_equipe OR m.id_equipe2 = e.id_equipe
+LEFT JOIN joueur j ON e.id_equipe = j.id_equipe
+LEFT JOIN action a ON j.id_joueur = a.id_joueur
+WHERE a.typeaction = 70 
+GROUP BY m.id_matches, e.nomEquipe;
+
+
+-- total moyenne tirs par équipe par match par competition 
+create or replace view v_moyenne_tirs_pm_pc as
+SELECT e.nomEquipe, c.nomcompetition, COUNT(a.id_action) / COUNT(DISTINCT m.id_matches) AS moyenne_tirs_par_match
+FROM equipe e
+JOIN joueur j ON e.id_equipe = j.id_equipe
+JOIN action a ON j.id_joueur = a.id_joueur
+JOIN matches m ON a.id_matches = m.id_matches
+JOIN competition c ON m.id_competition = c.id_competition
+WHERE a.typeaction IN (0, 5) 
+GROUP BY e.nomEquipe, c.nomcompetition;
+
+
+-- total carton par équipe par competition
+create or replace view v_cartonsttl_pc as
+SELECT e.nomEquipe, c.nomcompetition, COUNT(cr.id_carton) AS total_cartons
+FROM equipe e
+JOIN joueur j ON e.id_equipe = j.id_equipe
+JOIN carton cr ON j.id_joueur = cr.id_joueur
+JOIN matches m ON cr.id_matches = m.id_matches
+JOIN competition c ON m.id_competition = c.id_competition
+GROUP BY e.nomEquipe, c.nomcompetition;
+
+-- total carton jaunes par équipe par competition
+create or replace view v_cartjaunesttl_pc as
+SELECT e.nomEquipe, c.nomcompetition, COUNT(cr.id_carton) AS total_cartons_jaunes
+FROM equipe e
+JOIN joueur j ON e.id_equipe = j.id_equipe
+JOIN carton cr ON j.id_joueur = cr.id_joueur
+JOIN matches m ON cr.id_matches = m.id_matches
+JOIN competition c ON m.id_competition = c.id_competition
+WHERE cr.typecarton = 0
+GROUP BY e.nomEquipe, c.nomcompetition;
+
+
+-- total carton rouges par équipe par competition
+create or replace view v_cartrougesttl_pc as
+SELECT e.nomEquipe, c.nomcompetition, COUNT(cr.id_carton) AS total_cartons_jaunes
+FROM equipe e
+JOIN joueur j ON e.id_equipe = j.id_equipe
+JOIN carton cr ON j.id_joueur = cr.id_joueur
+JOIN matches m ON cr.id_matches = m.id_matches
+JOIN competition c ON m.id_competition = c.id_competition
+WHERE cr.typecarton = 10
+GROUP BY e.nomEquipe, c.nomcompetition;
+
+-- total pourcentage possession par equipe par competition
+create or replace view v_possessionPrct_pc as
+SELECT e.nomEquipe, c.nomcompetition, SUM(p.pourcentage) AS total_pourcentage_possession
+FROM equipe e
+JOIN possession p ON e.id_equipe = p.id_equipe
+JOIN matches m ON p.id_matches = m.id_matches
+JOIN competition c ON m.id_competition = c.id_competition
+GROUP BY e.nomEquipe, c.nomcompetition;
+
+-- pourcentage passe réussi par équipe par competition
+create or replace view v_p_reussite_e_pc as
+SELECT e.nomEquipe, c.nomcompetition, AVG(pa.reussite) AS pourcentage_passes_reussies
+FROM equipe e
+JOIN passes pa ON e.id_equipe = pa.id_equipe
+JOIN matches m ON pa.id_matches = m.id_matches
+JOIN competition c ON m.id_competition = c.id_competition
+GROUP BY e.nomEquipe, c.nomcompetition;
+
+-- moyenne aériengagnés par équipe par competition
+create or replace view v_me_aerienG_pc as
+SELECT e.nomEquipe, c.nomcompetition, AVG(a.typeaction = 60) AS moyenne_aerien_gagnes
+FROM equipe e
+JOIN joueur j ON e.id_equipe = j.id_equipe
+JOIN action a ON j.id_joueur = a.id_joueur
+JOIN matches m ON a.id_matches = m.id_matches
+JOIN competition c ON m.id_competition = c.id_competition
+WHERE a.typeaction = 60
+GROUP BY e.nomEquipe, c.nomcompetition;
+
+-- DEFENSE
+-- moyenne tirs par matches
+create or replace view v_me_tirs_pm as
+SELECT m.id_matches,m.datematches,COUNT(a.id_action) / COUNT(DISTINCT m.id_matches) AS me_tirs_pm
+FROM matches m
+JOIN action a ON m.id_matches = a.id_matches
+WHERE a.typeaction IN (0, 5);
+
+-- moyenne tirs par matches par competition
+create or replace view v_me_tirs_pm_pc as
+SELECT c.nomcompetition, COUNT(a.id_action) / COUNT(DISTINCT m.id_matches) AS me_tirs_pm_pc
+FROM matches m
+JOIN action a ON m.id_matches = a.id_matches
+JOIN competition c ON m.id_competition = c.id_competition
+WHERE a.typeaction IN (0, 5) 
+GROUP BY c.nomcompetition;
+
+-- moyenne tirs cadrés (CA) par matches par compétittion
+create or replace view v_me_tirsCA_pm as
+SELECT c.nomcompetition, COUNT(a.id_action) / COUNT(DISTINCT m.id_matches) AS me_tirsCA_pm
+FROM matches m
+JOIN action a ON m.id_matches = a.id_matches
+JOIN competition c ON m.id_competition = c.id_competition
+WHERE a.typeaction = 5
+GROUP BY c.nomcompetition;
+
+-- moyenne dribbles par joueur par match par compétition
+create or replace view v_me_dribbles_pj_pm as
+SELECT e.nomEquipe, c.nomcompetition, COUNT(a.id_action) / COUNT(DISTINCT m.id_matches) AS me_dribbles_pj_pm
+FROM equipe e
+JOIN joueur j ON e.id_equipe = j.id_equipe
+JOIN action a ON j.id_joueur = a.id_joueur
+JOIN matches m ON a.id_matches = m.id_matches
+JOIN competition c ON m.id_competition = c.id_competition
+WHERE a.typeaction = 40
+GROUP BY e.nomEquipe, c.nomcompetition;
+
+-- total dribbles par équipe par match par compétition
+create or replace view v_total_dribbles_pm as 
+SELECT e.nomEquipe, m.id_matches, c.nomcompetition, COUNT(a.id_action) AS total_dribbles
+FROM equipe e
+JOIN joueur j ON e.id_equipe = j.id_equipe
+JOIN action a ON j.id_joueur = a.id_joueur
+JOIN matches m ON a.id_matches = m.id_matches
+JOIN competition c ON m.id_competition = c.id_competition
+WHERE a.typeaction = 40 
+GROUP BY e.nomEquipe, m.id_matches, c.nomcompetition;
+
+-- ATTAQUE
+-- moyenne tacles par équipe par match par competition
+create or replace view v_me_tacles_pe_pm as
+SELECT e.nomEquipe, c.nomcompetition, COUNT(a.id_action) / COUNT(DISTINCT m.id_matches) AS me_tacles_pe_pm
+FROM equipe e
+JOIN joueur j ON e.id_equipe = j.id_equipe
+JOIN action a ON j.id_joueur = a.id_joueur
+JOIN matches m ON a.id_matches = m.id_matches
+JOIN competition c ON m.id_competition = c.id_competition
+WHERE a.typeaction = 10
+GROUP BY e.nomEquipe, c.nomcompetition;
+
+
+-- moyenne interception par équipe par match par compétition
+create or replace view v_me_interceptions_pe_pm as
+SELECT e.nomEquipe, c.nomcompetition, COUNT(a.id_action) / COUNT(DISTINCT m.id_matches) AS me_interceptions_pe_pm
+FROM equipe e
+JOIN joueur j ON e.id_equipe = j.id_equipe
+JOIN action a ON j.id_joueur = a.id_joueur
+JOIN matches m ON a.id_matches = m.id_matches
+JOIN competition c ON m.id_competition = c.id_competition
+WHERE a.typeaction = 20 
+GROUP BY e.nomEquipe, c.nomcompetition;
+
+-- moyenne fautes par match par équipe par compétition
+create or replace view v_me_fautes_pm_pe as
+SELECT e.nomEquipe, c.nomcompetition, COUNT(a.id_action) / COUNT(DISTINCT m.id_matches) AS me_fautes_pm_pe
+FROM equipe e
+JOIN joueur j ON e.id_equipe = j.id_equipe
+JOIN action a ON j.id_joueur = a.id_joueur
+JOIN matches m ON a.id_matches = m.id_matches
+JOIN competition c ON m.id_competition = c.id_competition
+WHERE a.typeaction = 50
+GROUP BY e.nomEquipe, c.nomcompetition;
+
+-- moyenne fautes subies par match par équipe par compétition (fautes causées par l'équipe adverse)
+create or replace view v_me_fautes_subies_pm_pe as
+SELECT e.nomEquipe, c.nomcompetition, COUNT(a.id_action) / COUNT(DISTINCT m.id_matches) AS me_fautes_subies_pm_pe
+FROM equipe e
+JOIN joueur j ON e.id_equipe = j.id_equipe
+JOIN action a ON j.id_joueur = a.id_joueur
+JOIN matches m ON a.id_matches = m.id_matches
+JOIN competition c ON m.id_competition = c.id_competition
+WHERE a.typeaction = 50 
+AND j.id_equipe = m.id_equipe2 
+GROUP BY e.nomEquipe, c.nomcompetition;
+
