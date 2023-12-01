@@ -237,7 +237,7 @@ update carton set typecarton = 10 where id_carton = 5;
     insert into action values (null, 40, 22, 5);
     insert into action values (null, 40, 22, 5);
     insert into action values (null, 40, 22, 1);
-    insert into action values (null, 40, 2, 15);
+    insert into action values (null, 40, 2, 1);
 
 
 
