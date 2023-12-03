@@ -30,7 +30,7 @@ const joueurController = {
     create: async (req, res) => {
         try {
             const { nom,id_equipe } = req.body
-            const sql = "INSERT INTO joueur (nomjoueur,id_equipe) VALUES (?, ?)"
+            const sql = "INSERT INTO joueur (nom,id_equipe) VALUES (?, ?)"
             const [rows, fields] = await pool.query(sql, [nomjoueur,id_equipe])
             res.json({
                 data: rows
