@@ -31,7 +31,7 @@ const joueurController = {
         try {
             const { nom,id_equipe } = req.body
             const sql = "INSERT INTO joueur (nom,id_equipe) VALUES (?, ?)"
-            const [rows, fields] = await pool.query(sql, [nomjoueur,id_equipe])
+            const [rows, fields] = await pool.query(sql, [nom,id_equipe])
             res.json({
                 data: rows
             })
