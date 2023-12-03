@@ -1,0 +1,31 @@
++
+70 buts : 0,2
+0 tirs : 0,02
+5 Tirs CA : 0,05
+10 Tacles : 0,05
+20 Interceptions : 0,05
+40 dribbles : 0,001
+60 aeriens gagnés : 0,05
+
+-
+70 buts encaissés : 0,2 (buts de l'équipe adverse)
+50 fautes : 0,1
+10 cartons rouges : 0,1 (table carton)
+0 cartons jaunes : 0,05 (table carton)
+30 hors jeux : 0,05
+
+Possession
+[0;30] -0,65
+]30;40] -0,5
+]40;50] -0,25
+]50;60] -0,5
+]60;70] -0,65
+]70;100] -1
+
+Passes
+[0;30] +0,001
+]30;40] +0,002
+]40;50] +0,05
+]50;60] +0,1
+]60;70] +0,3
+]70;100] +0,5
