@@ -17,6 +17,7 @@ const joueursRouter = require('./routes/joueurs.router')
 const matchesRouter = require('./routes/matches.router')
 const passesRouter = require('./routes/passes.router')
 const possessionsRouter = require('./routes/possessions.router')
+const general_gRouter = require('./routes/general_g.router')
 
 app.use("/api/v1/actions", actionsRouter)
 app.use("/api/v1/cartons", cartonsRouter)
@@ -26,6 +27,8 @@ app.use("/api/v1/joueurs", joueursRouter)
 app.use("/api/v1/matches", matchesRouter)
 app.use("/api/v1/passes", passesRouter)
 app.use("/api/v1/possessions", possessionsRouter)
+app.use("/api/v1/general_g", general_gRouter)
+
 
 app.use((err, req, res, next) => {
     console.error(err.stack);
