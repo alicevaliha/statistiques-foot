@@ -2,7 +2,7 @@ const pool = require("../database/index")
 const general_domController = {
     getAll: async (req, res) => {
         try {
-            const [rows, fields] = await pool.query("select * from v_Gen_dom_stats group by nomEquipe_dom , nomcompetition ")
+            const [rows, fields] = await pool.query("select * from v_Gen_dom_stats group by nomequipe , nomcompetition ")
             res.json({
                 data: rows
             })
@@ -16,7 +16,7 @@ const general_domController = {
     getById: async (req, res) => {
         try {
             const { id } = req.params
-            const [rows, fields] = await pool.query("select * from v_Gen_dom_stats where id_equipe = ? group by nomEquipe_dom , nomcompetition ", [id])
+            const [rows, fields] = await pool.query("select * from v_Gen_dom_stats where id_equipe = ? group by nomequipe , nomcompetition ", [id])
             res.json({
                 data: rows
             })
