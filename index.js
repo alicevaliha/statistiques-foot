@@ -28,6 +28,7 @@ app.use("/api/v1/matches", matchesRouter)
 app.use("/api/v1/passes", passesRouter)
 app.use("/api/v1/possessions", possessionsRouter)
 app.use("/api/v1/general_g", general_gRouter)
+app.use("/api/v1/general_dom", general_domRouter)
 
 
 app.use((err, req, res, next) => {
