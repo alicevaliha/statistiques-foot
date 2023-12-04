@@ -19,6 +19,7 @@ const passesRouter = require('./routes/passes.router')
 const possessionsRouter = require('./routes/possessions.router')
 const general_gRouter = require('./routes/general_g.router')
 const general_domRouter = require('./routes/general_dom.router')
+const general_extRouter = require('./routes/general_ext.router')
 
 app.use("/api/v1/actions", actionsRouter)
 app.use("/api/v1/cartons", cartonsRouter)
@@ -30,6 +31,8 @@ app.use("/api/v1/passes", passesRouter)
 app.use("/api/v1/possessions", possessionsRouter)
 app.use("/api/v1/general_g", general_gRouter)
 app.use("/api/v1/general_dom", general_domRouter)
+app.use("/api/v1/general_ext", general_extRouter)
+
 
 
 app.use((err, req, res, next) => {
